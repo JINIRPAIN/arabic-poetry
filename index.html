@@ -1,0 +1,547 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row =>
+                    row.some(cell => cell !== '' && cell !== null && cell !== undefined)
+                );
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>موقع حفظ القصائد</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.9/babel.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            overflow-x: hidden;
+        }
+        .poem-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+        .verse {
+            margin-bottom: 12px;
+            padding: 8px;
+            border-right: 4px solid #4a90e2;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s;
+        }
+        .verse.memorized {
+            background-color: #d4edda;
+            border-right-color: #28a745;
+        }
+        .dropdown {
+            position: sticky;
+            top: 10px;
+            z-index: 10;
+            width: 100%;
+        }
+        .progress-bar {
+            height: 8px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #28a745;
+            transition: width 0.3s;
+        }
+        .tts-warning {
+            background-color: #fff3cd;
+            padding: 8px;
+            border-radius: 5px;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+        }
+        .tts-controls {
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .tts-controls label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        /* Mobile-specific styles */
+        @media (max-width: 640px) {
+            .poem-container {
+                padding: 12px;
+            }
+            .verse {
+                padding: 6px;
+                margin-bottom: 10px;
+            }
+            .verse p {
+                font-size: 0.95rem;
+            }
+            .tts-controls label {
+                font-size: 0.85rem;
+            }
+            .tts-warning {
+                font-size: 0.8rem;
+                padding: 6px;
+            }
+            .dropdown select {
+                font-size: 0.9rem;
+            }
+            .progress-bar {
+                height: 6px;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            h2 {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const poems = [
+            {
+                title: "داعية السلام (زهير بن أبي سلمى)",
+                category: "حفظ",
+                verses: [
+                    "فَأَقْسَمْتُ بِالْبَيْتِ الَّذِي طَافَ حَوْلَهُ * رِجَالٌ بَنَوْهُ مِنْ قُرَيْشٍ وَجُرْهُمِ",
+                    "يَمِينًا لَنِعْمَ السَّيِّدَانِ وُجِدْتُمَا * عَلَى كُلِّ حَالٍ مِنْ سَحِيلٍ وَمُبْرَمِ",
+                    "تَدَارَكْتُمَا عَبْسًا وَدُبْيَانَ بَعْدَمَا * تَفَانَوْا وَدَقُّوا بَيْنَهُمْ عِطْرَ مَنْشَمِ",
+                    "وَقَدْ قُلْتُمَا إِنْ نُدْرِكِ السِّلْمَ وَاسِعًا * بِمَالٍ وَمَعْرُوفٍ مِنَ الأَمْرِ نَسْلَمِ",
+                    "أَلَا أَبْلِغِ الْأَحْلَافَ عَنِّي رِسَالَةً * وَدُبْيَانَ هَلْ أَقْسَمْتُمُ كُلَّ مُقْسَمِ",
+                    "وَمَا الْحَرْبُ إِلَّا مَا عَلِمْتُمْ وَذُقْتُمُ * وَمَا هُوَ عَنْهَا بِالْحَدِيثِ الْمُرَجَّمِ",
+                    "مَتَى تَبْعَثُوهَا تَبْعَثُوهَا ذَمِيمَةً * وَتَضْرَ إِذَا ضَرَّيْتُمُوهَا فَتَضْرَمِ",
+                    "فَتَعْرُكْكُمُ عَرْكَ الرَّحَى بِثِفَالِهَا * وَتَلْقَحْ كِشَافًا ثُمَّ تُنْتَجْ فَتُتْئِمِ",
+                    "فَتُنْتَجْ لَكُمْ غِلْمَانَ أَشْأَمَ كُلُّهُمْ * كَأَحْمَرِ عَادٍ ثُمَّ تُرْضِعْ فَتَفْطِمِ",
+                    "فَتُغْلِلْ لَكُمْ مَا لَا تُغِلُّ لِأَهْلِهَا * قُرًى بِالْعِرَاقِ مِنْ قَفِيزٍ وَدِرْهَمِ"
+                ]
+            },
+            {
+                title: "فارس بني عبس (عنترة بن شداد)",
+                category: "حفظ",
+                verses: [
+                    "إِنْ تُغْدِفِي دُونِيَ الْقِنَاعَ فَإِنَّنِي * طَبٌّ بِأَخْذِ الْفَارِسِ الْمُسْتَلْئِمِ",
+                    "أَثْنِي عَلَيَّ بِمَا عَلِمْتِ، فَإِنَّنِي * سَمْحٌ مُخَالَقَتِي، إِذَا لَمْ أُظْلَمِ",
+                    "فَإِذَا ظُلِمْتُ فَإِنَّ ظُلْمِي بَاسِلٌ * مُرٌّ مَذَاقَتُهُ كَطَعْمِ الْعَلْقَمِ",
+                    "هَلَّا سَأَلْتِ الْخَيْلَ يَا ابْنَةَ مَالِكٍ * إِنْ كُنْتِ جَاهِلَةً بِمَا لَمْ تَعْلَمِي",
+                    "إِذْ لَا أَزَالُ عَلَى رِحَالَةِ سَابِحٍ * نَهْدٍ، تُعَاوِرُهُ الْكُمَاةُ مُكَلَّمِ",
+                    "طَوْرًا يُجَرَّدُ لِلطِّعَانِ وَتَارَةً * يَأْوِي إِلَى حَصِدِ الْقِسِيِّ عَرَمْرَمِ",
+                    "يُخْبِرْكِ مَنْ شَهِدَ الْوَقِيعَةَ أَنَّنِي * أَغْشَى الْوَغَى، وَأَعِفُّ عِنْدَ الْمَغْنَمِ",
+                    "وَمُدَجَّجٍ كَرِهَ الْكُمَاةُ نِزَالَهُ * لَا مُمْعِنٍ، هَرَبًا وَلَا مُسْتَسْلِمِ",
+                    "جَادَتْ لَهُ كَفِّي بِعَاجِلِ طَعْنَةٍ * بِمُثَقَّفٍ صَدْقِ الْكُعُوبِ مُقَوَّمِ",
+                    "بِرَحِيبَةِ الْفَرْغَيْنِ يَهْدِي جَرْسُهَا * بِاللَّيْلِ مُعْتَسَّ الذِّئَابِ الضُّرَّمِ"
+                ]
+            },
+            {
+                title: "قيم ومثل (لبيد بن ربيعة العامري)",
+                category: "حفظ",
+                verses: [
+                    "إِذَا الْمَرْءُ لَمْ يَدْنَسْ مِنَ اللُّؤْمِ عِرْضُهُ * فَكُلُّ رِدَاءٍ يَرْتَدِيهِ جَمِيلُ",
+                    "وَإِنْ هُوَ لَمْ يَحْمِلْ عَلَى النَّفْسِ ضَيْمَهَا * فَلَيْسَ إِلَى حُسْنِ الثَّنَاءِ سَبِيلُ",
+                    "تُعَيِّرُنَا أَنَّا قَلِيلٌ عَدِيدُنَا * فَقُلْتُ لَهَا إِنَّ الْكِرَامَ قَلِيلُ",
+                    "وَمَا قَلَّ مَنْ كَانَتْ بَقَايَاهُ مِثْلَنَا * شَبَابٌ تَسَامَى لِلْعُلَا وَكُهُولُ",
+                    "وَمَا ضَرَّنَا أَنَّا قَلِيلٌ وَجَارُنَا * عَزِيزٌ وَجَارُ الْأَكْثَرِينَ ذَلِيلُ",
+                    "لَنَا جَبَلٌ يَحْتَلُّهُ مَنْ نُجِيرُهُ * مَنِيعٌ يَرُدُّ الطَّرْفَ وَهُوَ كَلِيلُ",
+                    "يُقَرِّبُ حُبُّ الْمَوْتِ آجَالَنَا لَنَا * وَتَكْرَهُهُ آجَالُهُمْ فَتَطُولُ",
+                    "وَمَا مَاتَ مِنَّا سَيِّدٌ حَتْفَ أَنْفِهِ * وَلَا طُلَّ مِنَّا حَيْثُ كَانَ قَتِيلُ",
+                    "تَسِيلُ عَلَى حَدِّ الظُّبَاتِ نُفُوسُنَا * وَلَيْسَتْ عَلَى غَيْرِ الظُّبَاتِ تَسِيلُ",
+                    "وَتُنْكِرُ إِنْ شِئْنَا عَلَى النَّاسِ قَوْلَهُمْ * وَلَا يُنْكِرُونَ الْقَوْلَ حِينَ نَقُولُ",
+                    "إِذَا سَيِّدٌ مِنَّا خَلَا قَامَ سَيِّدٌ * قَؤُولٌ لِمَا قَالَ الْكِرَامُ فَعُولُ",
+                    "وَمَا أُخْمِدَتْ نَارٌ لَنَا دُونَ طَارِقٍ * وَلَا ذَمَّنَا فِي النَّازِلِينَ نَزِيلُ",
+                    "سَلِي إِنْ جَهِلْتِ النَّاسَ عَنَّا وَعَنْهُمُ * فَلَيْسَ سَوَاءً عَالِمٌ وَجَهُولُ"
+                ]
+            },
+            {
+                title: "يوم الفرقان (حسان بن ثابت)",
+                category: "حفظ",
+                verses: [
+                    "عَرَفْتُ دِيَارَ زَيْنَبَ بِالْكَثِيبِ * كَخَطِّ الْوَحْيِ فِي الرَّقِّ الْقَشِيبِ",
+                    "فَدَعْ عَنْكَ التَّذَكُّرَ كُلَّ يَوْمٍ * وَرُدَّ حَرَارَةَ الصَّدْرِ الْكَئِيبِ",
+                    "وَخَبِّرْ بِالَّذِي لَا عَيْبَ فِيهِ * بِصِدْقٍ، غَيْرَ إِخْبَارِ الْكَذُوبِ",
+                    "بِمَا صَنَعَ الْمَلِيكُ غَدَاةَ بَدْرٍ * لَنَا فِي الْمُشْرِكِينَ مِنَ النَّصِيبِ",
+                    "غَدَاةَ كَأَنَّ جَمْعَهُمُ حِرَاءٌ * بَدَتْ أَرْكَانُهُ جُنْحَ الْغُرُوبِ",
+                    "فَلَاقَيْنَاهُمُ مِنَّا بِجَمْعٍ * كَأُسْدِ الْغَابِ: مُرْدَانٍ وَشِيبِ",
+                    "أَمَامَ مُحَمَّدٍ قَدْ آزَرُوهُ * عَلَى الْأَعْدَاءِ فِي رَهَجِ الْحُرُوبِ",
+                    "فَعَادَرَا أَبَا جَهْلٍ صَرِيعًا * وَعُتْبَةَ قَدْ تَرَكْنَا فِي الْجَبُوبِ",
+                    "وَشَيْبَةَ قَدْ تَرَكْنَا فِي رِجَالٍ * ذَوِي حَسَبٍ، إِذَا نُسِبُوا، حَسِيبِ",
+                    "يُنَادِيهِمْ رَسُولُ اللَّهِ لَمَّا * قَذَفْنَاهُمْ كَبَاكِبَ فِي الْقَلِيبِ",
+                    "أَلَمْ تَجِدُوا حَدِيثِي كَانَ حَقًّا * وَأَمْرُ اللَّهِ يَأْخُذُ بِالْقُلُوبِ"
+                ]
+            },
+            {
+                title: "علمت نفسي مكان دوائيا (قيس بن الملوح العامري)",
+                category: "حفظ",
+                verses: [
+                    "أَلَا يَا حَمَامَيْ بَطْنِ وَدَّانَ هِجْتُمَا * عَلَيَّ الْهَوَى لَمَّا تَغَنَّيْتُمَا لِيَا",
+                    "فَأَبْكَيْتُمَانِي وَسْطَ أَهْلِي وَلَمْ أَكُنْ * أُبَالِي دُمُوعَ الْعَيْنِ لَوْ كُنْتُ خَالِيَا",
+                    "أَلَا أَيُّهَا الرَّكْبُ الْيَمَانُونَ عَرِّجُوا * عَلَيْنَا فَقَدْ أَضْحَى هَوَايَ يَمَانِيَا",
+                    "نُسَائِلُكُمْ هَلْ سَالَ نُعْمَانُ بَعْدَنَا * وَحُبَّ إِلَيْنَا بَطْنُ نُعْمَانَ وَادِيَا",
+                    "أَعُدُّ اللَّيَالِي لَيْلَةً بَعْدَ لَيْلَةٍ * وَقَدْ عِشْتُ دَهْرًا لَا أَعُدُّ اللَّيَالِيَا",
+                    "تَمُرُّ اللَّيَالِي وَالشُّهُورُ وَتَنْقَضِي * وَحُبُّكِ مَا يَزْدَادُ إِلَّا تَمَادِيَا",
+                    "خَلِيلَيَّ إِنْ دَارَتْ عَلَى أُمِّ مَالِكٍ * صُرُوفُ اللَّيَالِي فَابْغِيَا لِيَ نَاعِيَا",
+                    "خَلِيلَيَّ لَا وَاللَّهِ لَا أَمْلِكُ الَّذِي * قَضَى اللَّهُ فِي لَيْلَى وَلَا مَا قَضَى لِيَا",
+                    "قَضَاهَا لِغَيْرِي وَابْتَلَانِي بِحُبِّهَا * فَهَلَّا بِشَيْءٍ غَيْرِ لَيْلَى ابْتَلَانِيَا",
+                    "أَمَضْرُوبَةٌ لَيْلَى عَلَى أَنْ أَزُورَهَا * وَمُتَّخِذٌ ذَنْبًا لَهَا أَنْ تَرَانِيَا",
+                    "وَلَوْ كَانَ وَاشٍ بِالْيَمَامَةِ دَارُهُ * وَدَارِي بِأَعْلَى حَضْرَمَوْتَ اهْتَدَى لِيَا",
+                    "وَإِنِّي لَأَخْشَى أَنْ أَمُوتَ فَجَاءَةً * وَفِي النَّفْسِ حَاجَاتٌ إِلَيْكِ كَمَا هِيَا",
+                    "وَإِنِّي لَيُثْنِينِي لِقَاؤُكِ كُلَّمَا * لَقِيتُكِ يَوْمًا أَنْ أَبُثَّكِ مَا بِيَا",
+                    "وَقَالُوا بِهِ دَاءٌ عُيَاءٌ أَصَابَهُ * وَقَدْ عَلِمَتْ نَفْسِي مَكَانَ دَوَائِيَا"
+                ]
+            },
+            {
+                title: "في الفخر والمدح (النابغة الجعدي)",
+                category: "شرح",
+                verses: [
+                    "خَلِيلَيَّ، عُوجَا سَاعَةً، وَتَهَجَّرَا * وَلُومَا عَلَى مَا أَحْدَثَ الدَّهْرُ، أَوْ ذَرَا",
+                    "وَلَا تَجْزَعَا إِنَّ الْحَيَاةَ مُشِمَّةٌ * شَقَاءً لِرَوْعَاتِ الْحَوَادِثِ، أَوْ قِرَا",
+                    "وَإِنْ جَاءَ أَمْرٌ لَا تُطِيقَانِ دَفْعَهُ * فَلَا تَجْزَعَا مِمَّا قَضَى اللَّهُ، وَاصْبِرَا",
+                    "أَلَمْ تَرَيَا أَنَّ الْمَلَامَةَ نَفْعُهَا * قَلِيلٌ، إِذَا مَا الشَّيْءُ، وَلَّى فَأَدْبَرَا",
+                    "تُهِيجُ الْبُكَاءَ الْمَلَامَةُ، ثُمَّ لَا * تُغَيِّرُ شَيْئًا، غَيْرَ كَلَامٍ، فَقَدْ مَرَا",
+                    "أَتَيْتُ رَسُولَ اللَّهِ، إِذْ جَاءَ بِالْهُدَى * وَيَتْلُو كِتَابًا كَالْمَجَرَّةِ، نَيِّرَا",
+                    "وَجَاهَدْتُ حَتَّى مَا أُجِنُّ وَمِنْ مَعِي * سُهَيْلًا إِذَا مَا لَاحَ ثُمَّتَ غَوَّرَا",
+                    "أُقِيمُ عَلَى التَّقْوَى وَأَرْضَى بِفِعْلِهَا * وَكُنْتُ مِنَ النَّارِ الْمَخُوفَةِ أَحْذَرَا",
+                    "وَإِنَّا لَقَوْمٌ مَا نُعَوِّدُ خَيْلَنَا * إِذَا مَا الْتَقَيْنَا أَنْ تَحِيدَ وَتَنْفِرَا",
+                    "وَنُنْكِرُ يَوْمَ الرَّوْعِ أَلْوَانَ خَيْلِنَا * مِنَ الطَّعْنِ حَتَّى نَحْسَبَ الْجَوْنَ أَشْقَرَا",
+                    "بَلَغْنَا السَّمَاءَ مَجْدَنَا وَجُدُودَنَا * وَإِنَّا لَنَرْجُو بَعْدَ ذَلِكَ مَظْهَرَا",
+                    "وَلَا خَيْرَ فِي حِلْمٍ إِذَا لَمْ تَكُنْ لَهُ * بَوَادِرُ تَحْمِي صَفْوَهُ أَنْ يُكَدَّرَا",
+                    "وَلَا خَيْرَ فِي جَهْلٍ إِذَا لَمْ يَكُنْ لَهُ * حَلِيمٌ إِذَا مَا أَوْرَدَ الْأَمْرَ أَصْدَرَا"
+                ]
+            },
+            {
+                title: "جرير يمدح عبد الملك بن مروان (جرير بن عطية)",
+                category: "شرح",
+                verses: [
+                    "أَتَصْحُو بَلْ فُؤَادُكَ غَيْرُ صَاحِ * عَشِيَّةَ هَمَّ صَحْبُكَ بِالرَّوَاحِ",
+                    "تَقُولُ الْعَاذِلَاتُ عَلَاكَ شَيْبٌ * أَهَذَا الشَّيْبُ يَمْنَعُنِي مِرَاحِي؟",
+                    "تَعَزَّتْ أُمُّ حَزْرَةَ ثُمَّ قَالَتْ * رَأَيْتُ الْمُورِدِينَ ذَوِي لِقَاحِ",
+                    "نُمِلُّ وَهِيَ سَاعِيَةٌ بَنِيهَا * بِأَنْفَاسٍ مِنَ الشَّبَمِ الْقَرَاحِ",
+                    "سَأَمْتَاحُ الْبُحُورَ فَجَنِّبِينِي * أَذَاةَ اللَّوْمِ وَانْتَظِرِي امْتِيَاحِي",
+                    "نَفَى بِاللَّهِ لَيْسَ لَهُ شَرِيكٌ * وَمَنْ عِنْدَ الْخَلِيفَةِ بِالنَّجَاحِ",
+                    "أَغِثْنِي، يَا فِدَاكَ أَبِي وَأُمِّي * بِسَيْبٍ مِنْكَ إِنَّكَ ذُو ارْتِيَاحِ",
+                    "سَأَشْكُرُ أَنْ رَدَدْتَ عَلَيَّ رِيشِي * وَأَثْبَتَّ الْقَوَادِمَ فِي جَنَاحِي",
+                    "أَلَسْتُمْ خَيْرَ مَنْ رَكِبَ الْمَطَايَا * وَأَنْدَى الْعَالَمِينَ بُطُونَ رَاحِ"
+                ]
+            }
+        ];
+
+        function Verse({ verse, index, memorized, toggleMemorized, speakVerse, isPlayingAll }) {
+            return (
+                <div className={`verse ${memorized ? 'memorized' : ''}`}>
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                        <p className="text-base sm:text-lg flex-1">{verse}</p>
+                        <div className="flex space-x-2 sm:space-x-3">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); speakVerse(verse); }}
+                                className="px-3 py-1 sm:px-4 sm:py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm sm:text-base"
+                                disabled={isPlayingAll}
+                            >
+                                تشغيل الصوت
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); toggleMemorized(index); }}
+                                className="px-3 py-1 sm:px-4 sm:py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm sm:text-base"
+                            >
+                                {memorized ? 'إلغاء الحفظ' : 'تم الحفظ'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function Poem({ poem, memorizedVerses, updateMemorizedState }) {
+            const [ttsRate, setTtsRate] = React.useState(0.7);
+            const [wordDelay, setWordDelay] = React.useState(0);
+            const [isPlayingAll, setIsPlayingAll] = React.useState(false);
+            const timeoutRef = React.useRef([]);
+
+            const cleanTextForTTS = (text) => {
+                return text
+                    .replace(/\*/g, '') // Remove asterisks
+                    .replace(/[،؛؟]/g, '') // Remove Arabic punctuation
+                    .replace(/\s+/g, ' ') // Normalize spaces
+                    .trim();
+            };
+
+            const speakVerse = (verse) => {
+                if (isPlayingAll) return;
+                speechSynthesis.cancel(); // Clear any ongoing speech
+                const cleanedText = cleanTextForTTS(verse);
+                if (wordDelay > 0) {
+                    const words = cleanedText.split(' ');
+                    let wordIndex = 0;
+                    const speakWord = () => {
+                        if (wordIndex < words.length) {
+                            const utterance = new SpeechSynthesisUtterance(words[wordIndex]);
+                            utterance.lang = 'ar-SA';
+                            utterance.rate = ttsRate;
+                            utterance.pitch = 1.0;
+                            utterance.volume = 0.7;
+                            utterance.onend = () => {
+                                const timeout = setTimeout(() => {
+                                    wordIndex++;
+                                    speakWord();
+                                }, wordDelay);
+                                timeoutRef.current.push(timeout);
+                            };
+                            speechSynthesis.speak(utterance);
+                        }
+                    };
+                    speakWord();
+                } else {
+                    const utterance = new SpeechSynthesisUtterance(cleanedText);
+                    utterance.lang = 'ar-SA';
+                    utterance.rate = ttsRate;
+                    utterance.pitch = 1.0;
+                    utterance.volume = 0.7;
+                    speechSynthesis.speak(utterance);
+                }
+            };
+
+            const speakAllVerses = () => {
+                if (isPlayingAll) {
+                    speechSynthesis.cancel();
+                    timeoutRef.current.forEach(clearTimeout);
+                    timeoutRef.current = [];
+                    setIsPlayingAll(false);
+                    return;
+                }
+                speechSynthesis.cancel(); // Clear any ongoing speech
+                timeoutRef.current.forEach(clearTimeout);
+                timeoutRef.current = [];
+                setIsPlayingAll(true);
+                let verseIndex = 0;
+                const speakNextVerse = () => {
+                    if (verseIndex < poem.verses.length && isPlayingAll) {
+                        const cleanedText = cleanTextForTTS(poem.verses[verseIndex]);
+                        if (wordDelay > 0) {
+                            const words = cleanedText.split(' ');
+                            let wordIndex = 0;
+                            const speakWord = () => {
+                                if (wordIndex < words.length && isPlayingAll) {
+                                    const utterance = new SpeechSynthesisUtterance(words[wordIndex]);
+                                    utterance.lang = 'ar-SA';
+                                    utterance.rate = ttsRate;
+                                    utterance.pitch = 1.0;
+                                    utterance.volume = 0.7;
+                                    utterance.onend = () => {
+                                        const timeout = setTimeout(() => {
+                                            wordIndex++;
+                                            speakWord();
+                                        }, wordDelay);
+                                        timeoutRef.current.push(timeout);
+                                    };
+                                    speechSynthesis.speak(utterance);
+                                } else if (isPlayingAll) {
+                                    verseIndex++;
+                                    speakNextVerse();
+                                }
+                            };
+                            speakWord();
+                        } else {
+                            const utterance = new SpeechSynthesisUtterance(cleanedText);
+                            utterance.lang = 'ar-SA';
+                            utterance.rate = ttsRate;
+                            utterance.pitch = 1.0;
+                            utterance.volume = 0.7;
+                            utterance.onend = () => {
+                                if (isPlayingAll) {
+                                    verseIndex++;
+                                    speakNextVerse();
+                                }
+                            };
+                            speechSynthesis.speak(utterance);
+                        }
+                    } else {
+                        timeoutRef.current.forEach(clearTimeout);
+                        timeoutRef.current = [];
+                        setIsPlayingAll(false);
+                    }
+                };
+                speakNextVerse();
+            };
+
+            React.useEffect(() => {
+                return () => {
+                    speechSynthesis.cancel();
+                    timeoutRef.current.forEach(clearTimeout);
+                    timeoutRef.current = [];
+                };
+            }, []);
+
+            const toggleMemorized = (index) => {
+                updateMemorizedState(poem.title, index, !memorizedVerses[index]);
+            };
+
+            const memorizedCount = memorizedVerses.filter(Boolean).length;
+            const progress = (memorizedCount / poem.verses.length) * 100;
+
+            return (
+                <div className="poem-container">
+                    <h2 className="text-xl sm:text-2xl font-bold text-center mb-4 sm:mb-6">{poem.title}</h2>
+                    <div className="tts-warning mb-4 text-center">
+                        <p>ملاحظة: الأداء الصوتي في المتصفح قد لا يراعي مخارج الحروف والتشكيل (مثل الكسرة أو التنوين) بشكل مثالي بسبب قيود تقنية. لنطق أدق، جرب أدوات خارجية مثل Google Text-to-Speech أو Amazon Polly.</p>
+                    </div>
+                    <div className="tts-controls">
+                        <label>
+                            سرعة الصوت:
+                            <input
+                                type="range"
+                                min="0.5"
+                                max="2.0"
+                                step="0.1"
+                                value={ttsRate}
+                                onChange={(e) => setTtsRate(parseFloat(e.target.value))}
+                                className="w-full"
+                            />
+                            <span>{ttsRate.toFixed(1)}</span>
+                        </label>
+                        <label>
+                            تأخير بين الكلمات (مللي ثانية):
+                            <input
+                                type="range"
+                                min="0"
+                                max="500"
+                                step="50"
+                                value={wordDelay}
+                                onChange={(e) => setWordDelay(parseInt(e.target.value))}
+                                className="w-full"
+                            />
+                            <span>{wordDelay} مللي ثانية</span>
+                        </label>
+                        <button
+                            onClick={speakAllVerses}
+                            className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 w-full sm:w-auto"
+                        >
+                            {isPlayingAll ? 'إيقاف الكل' : 'تشغيل صوت الكل'}
+                        </button>
+                    </div>
+                    <div className="mb-4 sm:mb-6">
+                        <p className="text-center mb-2 text-sm sm:text-base">تقدم الحفظ: {memorizedCount} / {poem.verses.length}</p>
+                        <div className="progress-bar">
+                            <div
+                                className="progress-bar-fill"
+                                style={{ width: `${progress}%` }}
+                            ></div>
+                        </div>
+                    </div>
+                    {poem.verses.map((verse, index) => (
+                        <Verse
+                            key={index}
+                            verse={verse}
+                            index={index}
+                            memorized={memorizedVerses[index]}
+                            toggleMemorized={toggleMemorized}
+                            speakVerse={speakVerse}
+                            isPlayingAll={isPlayingAll}
+                        />
+                    ))}
+                </div>
+            );
+        }
+
+        function App() {
+            const [selectedPoem, setSelectedPoem] = React.useState(poems[0]);
+            const [category, setCategory] = React.useState("حفظ");
+            const [memorizedStates, setMemorizedStates] = React.useState(
+                poems.reduce((acc, poem) => {
+                    acc[poem.title] = new Array(poem.verses.length).fill(false);
+                    return acc;
+                }, {})
+            );
+
+            const filteredPoems = poems.filter(poem => poem.category === category);
+
+            const updateMemorizedState = (poemTitle, index, state) => {
+                setMemorizedStates(prev => {
+                    const newState = {...prev};
+                    newState[poemTitle][index] = state;
+                    return newState;
+                });
+            };
+
+            return (
+                <div className="min-h-screen p-4 sm:p-6 max-w-full">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8">موقع حفظ القصائد</h1>
+                    
+                    <div className="flex flex-col sm:flex-row sm:justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
+                        <button
+                            onClick={() => setCategory("حفظ")}
+                            className={`px-4 py-2 rounded w-full sm:w-auto ${category === "حفظ" ? "bg-blue-600 text-white" : "bg-gray-200"} text-sm sm:text-base`}
+                        >
+                            قصائد الحفظ
+                        </button>
+                        <button
+                            onClick={() => setCategory("شرح")}
+                            className={`px-4 py-2 rounded w-full sm:w-auto ${category === "شرح" ? "bg-blue-600 text-white" : "bg-gray-200"} text-sm sm:text-base`}
+                        >
+                            قصائد الشرح
+                        </button>
+                    </div>
+
+                    <div className="dropdown flex justify-center mb-4 sm:mb-6">
+                        <select
+                            value={selectedPoem.title}
+                            onChange={(e) => {
+                                const poem = poems.find(p => p.title === e.target.value);
+                                setSelectedPoem(poem);
+                            }}
+                            className="p-2 border rounded w-full sm:w-3/4 text-sm sm:text-base"
+                        >
+                            {filteredPoems.map(poem => (
+                                <option key={poem.title} value={poem.title}>
+                                    {poem.title}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <Poem 
+                        poem={selectedPoem} 
+                        memorizedVerses={memorizedStates[selectedPoem.title]} 
+                        updateMemorizedState={updateMemorizedState}
+                    />
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
