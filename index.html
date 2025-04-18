@@ -49,53 +49,111 @@
             padding: 16px;
         }
         .verse {
-            margin-bottom: 12px;
-            padding: 8px;
+            margin-bottom: 16px;
+            padding: 16px;
             border-right: 4px solid #4a90e2;
             background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .verse:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
         .verse.memorized {
-            background-color: #d4edda;
+            background-color: #f0fff4;
             border-right-color: #28a745;
+        }
+        .verse p {
+            font-family: 'Traditional Arabic', 'Amiri', serif;
+            font-size: 1.25rem;
+            line-height: 2;
+            text-align: center;
+            margin-bottom: 12px;
         }
         .dropdown {
             position: sticky;
             top: 10px;
             z-index: 10;
             width: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         .progress-bar {
-            height: 8px;
+            height: 10px;
             background-color: #e9ecef;
-            border-radius: 5px;
+            border-radius: 10px;
             overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         .progress-bar-fill {
             height: 100%;
             background-color: #28a745;
-            transition: width 0.3s;
+            transition: width 0.5s ease;
+            background-image: linear-gradient(45deg, 
+                rgba(255,255,255,.15) 25%, 
+                transparent 25%, 
+                transparent 50%, 
+                rgba(255,255,255,.15) 50%, 
+                rgba(255,255,255,.15) 75%, 
+                transparent 75%, 
+                transparent);
+            background-size: 1rem 1rem;
+            animation: progress-bar-stripes 1s linear infinite;
         }
-        .tts-warning {
-            background-color: #fff3cd;
-            padding: 8px;
-            border-radius: 5px;
-            margin-bottom: 16px;
-            font-size: 0.9rem;
+        @keyframes progress-bar-stripes {
+            from { background-position: 1rem 0; }
+            to { background-position: 0 0; }
         }
         .tts-controls {
-            margin-bottom: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
         }
-        .tts-controls label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
+        .tts-controls input[type="range"] {
+            height: 6px;
+            border-radius: 3px;
+            background: #e9ecef;
+            outline: none;
+            transition: background 0.3s;
+        }
+        .tts-controls input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #4a90e2;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .tts-controls input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+        .poem-title {
+            font-family: 'Traditional Arabic', 'Amiri', serif;
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e2e8f0;
+            position: relative;
+        }
+        .poem-title::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 2px;
+            background-color: #4a90e2;
         }
         /* Mobile-specific styles */
         @media (max-width: 640px) {
@@ -136,6 +194,7 @@
 
     <script type="text/babel">
         const poems = [
+            // قصائد الحفظ
             {
                 title: "داعية السلام (زهير بن أبي سلمى)",
                 category: "حفظ",
@@ -225,6 +284,80 @@
                 ]
             },
             {
+                title: "في النفس حاجات (جميل بن معمر)",
+                category: "حفظ",
+                verses: [
+                    "وَمَا زِلْتُمُ يَا بُثْنَ حَتَّى لَوَ اَنَّنِي * مِنَ الشَّوْقِ أَسْتَبْكِي الْحَمَامَ بَكَى لِيَا",
+                    "إِذَا حَدَرَتْ رِجْلِي وَقِيلَ شِفَاؤُهَا * دُعَاءُ حَبِيبٍ كُنْتِ أَنْتِ دُعَائِيَا",
+                    "وَمَا زَادَنِي الْوَاشُونَ إِلَّا صَبَابَةً * وَلَا طُولُ اجْتِمَاعِ تَقَالِيَا",
+                    "وَلَا زَادَنِي الْوَاشُونَ إِلَّا كَآبَةً * وَلَا كَثْرَةُ النَّاهِينَ إِلَّا تَمَادِيَا",
+                    "وَأَنْتِ الَّتِي إِنْ شِئْتِ كَدَّرْتِ عِيشَتِي * وَإِنْ شِئْتِ بَعْدَ اللَّهِ أَنْعَمْتِ بَالِيَا",
+                    "وَأَنْتِ الَّتِي مَا مِنْ صَدِيقٍ وَلَا عِدًى * يَرَى نُضْوَ مَا أَبْقَيْتِ إِلَّا رَثَى لِيَا",
+                    "لَقَدْ خِفْتُ أَنْ أَلْقَى الْمَنِيَّةَ بَغْتَةً * وَفِي النَّفْسِ حَاجَاتٌ إِلَيْكِ كَمَا هِيَا"
+                ]
+            },
+            // قصائد الشرح
+            {
+                title: "كيف لي بالصبر (برة بنت الحارث)",
+                category: "شرح",
+                verses: [
+                    "يَا عَمْرُو مَالِي عَنْكَ مِنْ صَبْرِ * يَا عَمْرُو يَا أَسَفَا عَلَى عَمْرُو",
+                    "لِلَّهِ ، يَا عَمْرُو، وَإِنِّي فَتًى * كُفِّنْتُ ثُمَّ وُضِعْتُ فِي الْقَبْرِ",
+                    "أَحْثُوا التُّرَابَ عَلَى مَفَارِقِهِ * وَعَلَى غُرَارَةِ وَجْهِهِ النَّضْرِ",
+                    "حِينَ اسْتَوَى وَعَلَا الشَّبَابُ بِهِ * وَبَدَا مُنِيرَ الْوَجْهِ كَالْبَدْرِ",
+                    "وَأَقَامَ مُنْطَلِقًا فَأَكْثَبَهُ * وَرَوَى وَجَالَسَ كُلَّ ذِي حِجْرِ",
+                    "وَرَمَى فَأَرْسَلَ مَنَاطِعًا * وَرَأَى شَقَاءَ مَنَاجِدٍ تَجْرِي",
+                    "ثُمَّ لَمْ يَجِدْهُ فَسَاوَرَهُ * وَجَدًا مَعَ الْخَادِينَ فِي الْمَأْثِرِ",
+                    "تَنَبَّأَ الْخِبَارُ بِهِ، وَتَقَدَّمَهَا * قَلَحٌ يُقَلِّبُ مَقْلَتَيْ صَقْرِ",
+                    "زَبَيْتُهُ عَصْرًا أَفَتْقَتْهُ * فِي الْبَحْرِ أَغْدُوهُ وَفِي الْعَصْرِ",
+                    "أَبَنِيَّ الرِّوَاقَ عَلَى أَرِيكَتِهِ * لِيُقِيلَ دُونَ الشَّمْسِ فِي سِتْرِ",
+                    "قَدْ رَاعَنِي صَوْتٌ نَبِهْتُ لَهُ * وَذَعَرَتْ مِنْهُ أَيَّمَا ذُعْرِ",
+                    "فَإِذَا مُلِيتُهُ مُسْتَأْسِرُهُ * قَدْ كَدَحَتْ فِي الْوَجْهِ وَالنَّحْرِ",
+                    "وَالْمَوْتُ يَقْبِضُهُ وَيَبْسُطُهُ * كَالثَّوْبِ عِنْدَ الطَّيِّ وَالنَّشْرِ",
+                    "كَيْفَ التَّعَزِّي عَنْكَ يَا عَمْرُو * أَمْ كَيْفَ لِي يَا عَمْرُو بِالصَّبْرِ"
+                ]
+            },
+            {
+                title: "لم يك وقافا (دريد بن الصمة)",
+                category: "شرح",
+                verses: [
+                    "أَعَاذِلُ إِنَّ الرُّزْءَ فِي مِثْلِ خَالِدٍ * وَلَا رُزْءَ فِيمَا أَهْلَكَ الْمَرْءُ عَنْ يَدِ",
+                    "وَقُلْتُ لِمَارِضٍ وَأَصْحَابِ عَارِضٍ * وَرَهْطِ بَنِي السَّوْدَاءِ وَالْقَوْمِ شُهَّدِي",
+                    "عَلَانِيَةً ظَنُّوا بِأَلْفَيْ مُدَجَّجٍ * سَرَاتُهُمُ فِي الْفَارِسِيِّ الْمُسَرَّدِ",
+                    "وَلَمَّا رَأَيْتُ الْخَيْلَ قُبْلًا كَأَنَّهَا * جَرَادٌ يُبَارِي وَجْهَةَ الرِّيحِ مُغْتَدِي",
+                    "أَمَرْتُهُمُ أَمْرِي بِمُنْعَرَجِ اللِّوَى * فَلَمْ يَسْتَبِينُوا النُّصْحَ إِلَّا ضُحَى الْغَدِ",
+                    "فَلَمَّا عَصَوْنِي كُنْتُ مِنْهُمْ وَقَدْ أَرَى * غِوَايَتَهُمُ وَالَّتِي غَيْرُ مُهْتَدِي",
+                    "وَمَا أَنَا إِلَّا مِنْ غَزِيَّةَ إِنْ غَوَتْ * غَوَيْتُ وَإِنْ تَرْشُدْ غَزِيَّةُ أَرْشُدِ",
+                    "دَعَانِي أَخِي وَالْخَيْلُ بَيْنِي وَبَيْنَهُ * فَلَمَّا دَعَانِي لَمْ يَجِدْنِي بِقُعْدَدِ",
+                    "فَجِئْتُ إِلَيْهِ وَالرِّمَاحُ تَنُوشُهُ * كَوَقْعِ الصَّيَاصِي فِي النَّسِيجِ الْمُمَدَّدِ",
+                    "فَطَاعَنْتُ عَنْهُ الْخَيْلَ حَتَّى تَنَفَّسَتْ * وَحَتَّى عَلَانِي كُلُّ أَشْقَرَ مُزْبِدِ",
+                    "طِعَانَ امْرِئٍ آسَى أَخَاهُ بِنَفْسِهِ * وَيَعْلَمُ أَنَّ الْمَرْءَ غَيْرُ مُخَلَّدِ",
+                    "تَنَادَوْا فَقَالُوا أَرْدَتِ الْخَيْلُ فَارِسًا * فَقُلْتُ : أَعَبْدُ اللَّهِ ذَلِكُمُ الرَّدِي ؟",
+                    "فَإِنْ يَكُ عَبْدُ اللَّهِ خَلَّى مَكَانَهُ * فَمَا كَانَ وَقَّافًا وَلَا طَائِشَ الْيَدِ",
+                    "كَمِيشُ الْإِزَارِ خَارِجٌ نِصْفَ سَاقِهِ * صَبُورٌ عَلَى الْعَزَّاءِ طَلَّاعُ أَنْجُدِ",
+                    "تَرَى خِصَبَ الْبِيضِ وَالزَّادَ حَاضِرٌ * عِنْدَ وَيُعْتَدُو فِي الْقَيْصَرِ الْمُقَعَّدِ",
+                    "وَإِنْ مَسَّهُ الْإِقْوَاءُ وَالْجَهْدُ زَادَهُ * سَمَاحًا وَإِتْلَافًا لِمَا كَانَ فِي الْيَدِ",
+                    "وَغَارَهُ بَيْنَ الْيَوْمِ وَالْأَمْسِ فِتْنَةٌ * فَأَرْكَبَهَا رَكْضًا بِسَيْفٍ مُهَنَّدِ",
+                    "سَلِيمُ الشَّظَا عَبْلُ الشَّوَى شَنِجُ النَّسَا * طَوِيلُ الْقَرَا لَهْدٌ أَسِيلُ الْمُقَلَّدِ",
+                    "يَمُوتُ طَوِيلُ الْقَوْمِ عِقْدُ عِذَارِهِ * مَلِيثٌ كَجِذْعِ النَّخْلَةِ الْمُتَجَرِّدِ",
+                    "وَهَوْنٍ وَجَدِّي الَّتِي لَمْ أَقُلْ لَهُ * كَذَبْتَ وَلَمْ أَبْخَلْ بِمَا مَلَكَتْ يَدِي"
+                ]
+            },
+            {
+                title: "هم الأنصار (كعب بن زهير)",
+                category: "شرح",
+                verses: [
+                    "مَنْ سَرَّهُ كَرَمُ الْحَيَاةِ فَلَا يَزَلْ * فِي مِقْنَبٍ مِنْ صَالِحِي الْأَنْصَارِ",
+                    "تَرِثُ الْجِبَالَ رَزَانَةً أَحْلَامُهُمْ * وَأَكُفُّهُمْ خَلَفٌ مِنَ الْأَمْطَارِ",
+                    "الْمُكْرِهِينَ السُّمْهَرِيَّ بِأَذْرُعٍ * كَصَوَاقِلِ الْهِنْدِيِّ غَيْرَ قِصَارِ",
+                    "وَالنَّاظِرِينَ بِأَعْيُنٍ مُحْمَرَّةٍ * كَالْجَمْرِ غَيْرَ كَلِيلَةِ الْأَبْصَارِ",
+                    "وَالنَّازِلِينَ النَّاسَ عَنْ أَدْيَانِهِمْ * بِالْمُشْرِفِيِّ وَبِالْقَنَا الْخَطَّارِ",
+                    "وَالْبَاذِلِينَ نُفُوسَهُمْ لِنَبِيِّهِمْ * يَوْمَ الْهِيَاجِ وَفِتْنَةَ الْجَبَّارِ",
+                    "دَرَبُوا كَمَا دَرِبَتْ أُسُودُ حَفِيَّةٍ * عَادٍ الرِّقَابِ مِنَ الْأُسُودِ ضَوَارِي",
+                    "وَهُمُ إِذَا خَوَتِ النُّجُومُ وَأَمْحَلُوا * لِلطَّائِفِينَ السَّائِلِينَ مَقَارِي"
+                ]
+            },
+            {
                 title: "في الفخر والمدح (النابغة الجعدي)",
                 category: "شرح",
                 verses: [
@@ -257,25 +390,75 @@
                     "سَأَشْكُرُ أَنْ رَدَدْتَ عَلَيَّ رِيشِي * وَأَثْبَتَّ الْقَوَادِمَ فِي جَنَاحِي",
                     "أَلَسْتُمْ خَيْرَ مَنْ رَكِبَ الْمَطَايَا * وَأَنْدَى الْعَالَمِينَ بُطُونَ رَاحِ"
                 ]
+            },
+            // الرسائل
+            {
+                title: "كتاب عمر بن الخطاب إلى أبي موسى الأشعري (في القضاء)",
+                category: "رسائل",
+                verses: [
+                    "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ مِنْ عَبْدِ اللَّهِ عُمَرَ بْنِ الْخَطَّابِ أَمِيرِ الْمُؤْمِنِينَ إِلَى عَبْدِ اللَّهِ بْنِ قَيْسٍ – سَلَامٌ عَلَيْكَ أَمَّا بَعْدُ فَإِنَّ الْقَضَاءَ فَرِيضَةٌ مُحْكَمَةٌ وَسُنَّةٌ مُتَّبَعَةٌ ، فَافْهَمْ إِذَا أُدْلِيَ إِلَيْكَ ، وَانْفِذْ إِذَا تَبَيَّنَ لَكَ فَإِنَّهُ لَا يَنْفَعُ تَكَلُّمٌ بِحَقٍّ لَا نَفَاذَ لَهُ ، آسِ بَيْنَ النَّاسِ فِي وَجْهِكَ وَعَدْلِكَ وَمَجْلِسِكَ حَتَّى لَا يَطْمَعَ شَرِيفٌ فِي حَيْفِكَ ، وَلَا يَيْأَسَ ضَعِيفٌ مِنْ عَدْلِكَ .",
+                    "الْبَيِّنَةُ عَلَى مَنِ ادَّعَى ، وَالْيَمِينُ عَلَى مَنْ أَنْكَرَ ، وَالصُّلْحُ جَائِزٌ بَيْنَ الْمُسْلِمِينَ إِلَّا صُلْحًا أَحَلَّ حَرَامًا أَوْ حَرَّمَ حَلَالًا ، وَلَا يَمْنَعْكَ قَضَاءٌ قَضَيْتَهُ الْيَوْمَ فَرَاجَعْتَ فِيهِ عَقْلَكَ وَهُدِيتَ فِيهِ لِرُشْدِكَ أَنْ تَرْجِعَ إِلَى الْحَقِّ فَإِنَّ الْحَقَّ قَدِيمٌ وَمُرَاجَعَةُ الْحَقِّ خَيْرٌ مِنَ التَّمَادِي فِي الْبَاطِلِ .",
+                    "الْفَهْمَ الْفَهْمَ فِيمَا يَخْتَلِجُ فِي صَدْرِكَ مِمَّا لَيْسَ فِي كِتَابِ اللَّهِ وَسُنَّةِ النَّبِيِّ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ ثُمَّ اعْرِفِ الْأَشْبَاهَ وَالْأَمْثَالَ ، فَقِسِ الْأُمُورَ عِنْدَ ذَلِكَ بِنَظَائِرِهَا ، وَاعْمِدْ إِلَى أَقْرَبِهَا إِلَى اللَّهِ تَعَالَى وَأَشْبَهِهَا بِالْحَقِّ ، وَاجْعَلْ لِمَنِ ادَّعَى حَقًّا غَائِبًا أَوْ بَيِّنَةً أَمَدًا يَنْتَهِي إِلَيْهِ فَإِنْ أَحْضَرَ بَيِّنَةً أَخَذْتَ لَهُ بِحَقِّهِ ، وَإِلَّا اسْتَحْلَلْتَ عَلَيْهِ الْقَضِيَّةَ فَإِنَّ ذَلِكَ أَنْفَى لِلشَّكِّ وَأَجْلَى لِلْعَمَى ، وَأَبْلَغُ فِي الْعُذْرِ .",
+                    "الْمُسْلِمُونَ عُدُولٌ بَعْضُهُمْ عَلَى بَعْضٍ إِلَّا مَجْلُودًا فِي حَدٍّ ، أَوْ مُجَرَّبًا عَلَيْهِ شَهَادَةَ زُورٍ ، أَوْ ظَنِينًا فِي وَلَاءٍ أَوْ نَسَبٍ فَإِنَّ اللَّهَ قَدْ تَوَلَّى مِنْكُمْ السَّرَائِرَ ، وَدَرَأَ بِالْبَيِّنَاتِ وَالْأَيْمَانِ وَإِيَّاكَ وَالْغَضَبَ وَالْقَلَقَ وَالضَّجَرَ وَالتَّأَذِّيَ بِالْخُصُومِ ، وَالتَّنَكُّرَ عِنْدَ الْخُصُومَاتِ ، فَإِنَّ الْحَقَّ فِي مَوَاطِنِ الْحَقِّ ، يُعَظِّمُ اللَّهُ بِهِ الْأَجْرَ ، وَيُحْسِنُ عَلَيْهِ الذُّخْرَ فَمَنْ صَحَّتْ نِيَّتُهُ ، وَأَقْبَلَ عَلَى نَفْسِهِ ، كَفَاهُ اللَّهُ مَا بَيْنَهُ وَبَيْنَ النَّاسِ ، وَمَنْ تَحَلَّى لِلنَّاسِ بِمَا يَعْلَمُ اللَّهُ أَنَّهُ لَيْسَ مِنْ نَفْسِهِ ، شَانَهُ اللَّهُ ، فَمَا ظَنُّكَ بِثَوَابِ عِنْدَ اللَّهِ عَزَّ وَجَلَّ فِي عَاجِلِ رِزْقِهِ وَخَزَائِنِ رَحْمَتِهِ ، وَالسَّلَامُ ."
+                ]
             }
         ];
 
-        function Verse({ verse, index, memorized, toggleMemorized, speakVerse, isPlayingAll }) {
+        function Verse({ verse, index, memorized, toggleMemorized, speakVerse, isPlayingAll, settings }) {
+            const [isPlaying, setIsPlaying] = React.useState(false);
+            const audioRef = React.useRef(null);
+
+            const verseStyle = {
+                backgroundColor: memorized ? '#f0fff4' : settings.verseBackground,
+            };
+
+            const textStyle = {
+                fontSize: `${settings.fontSize}rem`,
+            };
+
+            const handlePlayClick = async (e) => {
+                e.stopPropagation();
+                if (isPlaying) {
+                    if (audioRef.current) {
+                        audioRef.current.stop();
+                        audioRef.current = null;
+                    }
+                    setIsPlaying(false);
+                } else {
+                    setIsPlaying(true);
+                    try {
+                        await speakVerse(verse, setIsPlaying, audioRef);
+                    } catch (error) {
+                        console.error('Error playing verse:', error);
+                        setIsPlaying(false);
+                    }
+                }
+            };
+
+            React.useEffect(() => {
+                return () => {
+                    if (audioRef.current) {
+                        audioRef.current.stop();
+                        audioRef.current = null;
+                    }
+                };
+            }, []);
+
             return (
-                <div className={`verse ${memorized ? 'memorized' : ''}`}>
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                        <p className="text-base sm:text-lg flex-1">{verse}</p>
-                        <div className="flex space-x-2 sm:space-x-3">
+                <div className={`verse ${memorized ? 'memorized' : ''}`} style={verseStyle}>
+                    <div className="flex flex-col gap-4">
+                        <p className="text-center" style={textStyle}>{verse}</p>
+                        <div className="flex justify-center space-x-3">
                             <button
-                                onClick={(e) => { e.stopPropagation(); speakVerse(verse); }}
-                                className="px-3 py-1 sm:px-4 sm:py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm sm:text-base"
+                                onClick={handlePlayClick}
+                                className={`px-4 py-2 ${isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'} text-white rounded-lg transition-colors duration-200`}
                                 disabled={isPlayingAll}
                             >
-                                تشغيل الصوت
+                                {isPlaying ? 'إيقاف' : 'تشغيل الصوت'}
                             </button>
                             <button
                                 onClick={(e) => { e.stopPropagation(); toggleMemorized(index); }}
-                                className="px-3 py-1 sm:px-4 sm:py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm sm:text-base"
+                                className={`px-4 py-2 ${memorized ? 'bg-green-600' : 'bg-green-500'} text-white rounded-lg hover:bg-green-600 transition-colors duration-200`}
                             >
                                 {memorized ? 'إلغاء الحفظ' : 'تم الحفظ'}
                             </button>
@@ -285,125 +468,240 @@
             );
         }
 
-        function Poem({ poem, memorizedVerses, updateMemorizedState }) {
-            const [ttsRate, setTtsRate] = React.useState(0.7);
+        function Poem({ poem, memorizedVerses, updateMemorizedState, settings }) {
+            const [ttsRate, setTtsRate] = React.useState(1.0);
             const [wordDelay, setWordDelay] = React.useState(0);
             const [isPlayingAll, setIsPlayingAll] = React.useState(false);
-            const timeoutRef = React.useRef([]);
-
-            const cleanTextForTTS = (text) => {
-                return text
-                    .replace(/\*/g, '') // Remove asterisks
-                    .replace(/[،؛؟]/g, '') // Remove Arabic punctuation
-                    .replace(/\s+/g, ' ') // Normalize spaces
-                    .trim();
-            };
-
-            const speakVerse = (verse) => {
-                if (isPlayingAll) return;
-                speechSynthesis.cancel(); // Clear any ongoing speech
-                const cleanedText = cleanTextForTTS(verse);
-                if (wordDelay > 0) {
-                    const words = cleanedText.split(' ');
-                    let wordIndex = 0;
-                    const speakWord = () => {
-                        if (wordIndex < words.length) {
-                            const utterance = new SpeechSynthesisUtterance(words[wordIndex]);
-                            utterance.lang = 'ar-SA';
-                            utterance.rate = ttsRate;
-                            utterance.pitch = 1.0;
-                            utterance.volume = 0.7;
-                            utterance.onend = () => {
-                                const timeout = setTimeout(() => {
-                                    wordIndex++;
-                                    speakWord();
-                                }, wordDelay);
-                                timeoutRef.current.push(timeout);
-                            };
-                            speechSynthesis.speak(utterance);
-                        }
-                    };
-                    speakWord();
-                } else {
-                    const utterance = new SpeechSynthesisUtterance(cleanedText);
-                    utterance.lang = 'ar-SA';
-                    utterance.rate = ttsRate;
-                    utterance.pitch = 1.0;
-                    utterance.volume = 0.7;
-                    speechSynthesis.speak(utterance);
-                }
-            };
-
-            const speakAllVerses = () => {
-                if (isPlayingAll) {
-                    speechSynthesis.cancel();
-                    timeoutRef.current.forEach(clearTimeout);
-                    timeoutRef.current = [];
-                    setIsPlayingAll(false);
-                    return;
-                }
-                speechSynthesis.cancel(); // Clear any ongoing speech
-                timeoutRef.current.forEach(clearTimeout);
-                timeoutRef.current = [];
-                setIsPlayingAll(true);
-                let verseIndex = 0;
-                const speakNextVerse = () => {
-                    if (verseIndex < poem.verses.length && isPlayingAll) {
-                        const cleanedText = cleanTextForTTS(poem.verses[verseIndex]);
-                        if (wordDelay > 0) {
-                            const words = cleanedText.split(' ');
-                            let wordIndex = 0;
-                            const speakWord = () => {
-                                if (wordIndex < words.length && isPlayingAll) {
-                                    const utterance = new SpeechSynthesisUtterance(words[wordIndex]);
-                                    utterance.lang = 'ar-SA';
-                                    utterance.rate = ttsRate;
-                                    utterance.pitch = 1.0;
-                                    utterance.volume = 0.7;
-                                    utterance.onend = () => {
-                                        const timeout = setTimeout(() => {
-                                            wordIndex++;
-                                            speakWord();
-                                        }, wordDelay);
-                                        timeoutRef.current.push(timeout);
-                                    };
-                                    speechSynthesis.speak(utterance);
-                                } else if (isPlayingAll) {
-                                    verseIndex++;
-                                    speakNextVerse();
-                                }
-                            };
-                            speakWord();
-                        } else {
-                            const utterance = new SpeechSynthesisUtterance(cleanedText);
-                            utterance.lang = 'ar-SA';
-                            utterance.rate = ttsRate;
-                            utterance.pitch = 1.0;
-                            utterance.volume = 0.7;
-                            utterance.onend = () => {
-                                if (isPlayingAll) {
-                                    verseIndex++;
-                                    speakNextVerse();
-                                }
-                            };
-                            speechSynthesis.speak(utterance);
-                        }
-                    } else {
-                        timeoutRef.current.forEach(clearTimeout);
-                        timeoutRef.current = [];
-                        setIsPlayingAll(false);
-                    }
-                };
-                speakNextVerse();
-            };
+            const [currentAudio, setCurrentAudio] = React.useState(null);
+            const timeoutRef = React.useRef(null);
+            const isMounted = React.useRef(true);
+            const allAudioRefs = React.useRef([]);
 
             React.useEffect(() => {
                 return () => {
-                    speechSynthesis.cancel();
-                    timeoutRef.current.forEach(clearTimeout);
-                    timeoutRef.current = [];
+                    isMounted.current = false;
+                    stopPlayback();
                 };
             }, []);
+
+            // تعريف وظيفة الإيقاف القسري عالمياً 
+            React.useEffect(() => {
+                window.emergencyAudioStop = function() {
+                    console.log("EMERGENCY AUDIO STOP ACTIVATED");
+                    
+                    // إيقاف جميع المؤقتات
+                    clearTimeout(timeoutRef.current);
+                    timeoutRef.current = null;
+                    
+                    // إيقاف جميع عناصر الصوت في الصفحة
+                    document.querySelectorAll('audio').forEach(audio => {
+                        try {
+                            audio.pause();
+                            audio.src = '';
+                            audio.remove();
+                        } catch (e) {}
+                    });
+                    
+                    // إعادة تعيين المتغيرات
+                    allAudioRefs.current = [];
+                    if (currentAudio) {
+                        try {
+                            currentAudio.pause();
+                            currentAudio.src = '';
+                        } catch (e) {}
+                        setCurrentAudio(null);
+                    }
+                    
+                    setIsPlayingAll(false);
+                    
+                    // أسلوب أكثر عدوانية لإيقاف الصوت: إعادة تهيئة نظام الصوت
+                    try {
+                        // إعادة تهيئة نظام الصوت بإضافة وإزالة iframe
+                        const frame = document.createElement('iframe');
+                        frame.style.display = 'none';
+                        document.body.appendChild(frame);
+                        setTimeout(() => {
+                            document.body.removeChild(frame);
+                        }, 100);
+                    } catch (e) {}
+                };
+                
+                return () => {
+                    delete window.emergencyAudioStop;
+                };
+            }, []);
+
+            const stopPlayback = () => {
+                // استخدام وظيفة الإيقاف القسري
+                if (window.emergencyAudioStop) {
+                    window.emergencyAudioStop();
+                }
+            };
+            
+            // طريقة جديدة تماماً لتشغيل الكلمات مع دعم أفضل للتأخير
+            const speakText = async (text, rate, delayAfter = 0) => {
+                return new Promise((resolve, reject) => {
+                    // تنظيف النص وتحسين النطق
+                    let processedText = text;
+                    if (text.includes("عمرو")) {
+                        processedText = text.replace(/عمرو/g, "عَمْرُو");
+                    }
+                    
+                    console.log(`Playing: "${processedText}" with rate ${rate}, delay after: ${delayAfter}ms`);
+                    
+                    // إنشاء عنصر الصوت
+                    const audio = new Audio();
+                    // تحديد هوية فريدة للصوت
+                    audio.id = 'tts-audio-' + Date.now();
+                    audio.className = 'tts-audio';
+                    audio.src = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ar&client=tw-ob&q=${encodeURIComponent(processedText)}`;
+                    audio.playbackRate = rate;
+                    
+                    // تخزين مرجع الصوت للتمكن من إيقافه لاحقاً
+                    allAudioRefs.current.push(audio);
+                    setCurrentAudio(audio);
+                    
+                    // إضافة معالجات الأحداث
+                    const handleEnded = async () => {
+                        audio.removeEventListener('ended', handleEnded);
+                        
+                        // إزالة من قائمة المراجع
+                        const index = allAudioRefs.current.indexOf(audio);
+                        if (index > -1) {
+                            allAudioRefs.current.splice(index, 1);
+                        }
+                        
+                        // تنفيذ التأخير إذا كان مطلوباً
+                        if (delayAfter > 0 && isMounted.current) {
+                            await new Promise(innerResolve => {
+                                timeoutRef.current = setTimeout(innerResolve, delayAfter);
+                            });
+                        }
+                        
+                        // إكمال الوعد
+                        resolve();
+                    };
+                    
+                    const handleError = (e) => {
+                        console.error("Audio playback error:", e);
+                        audio.removeEventListener('error', handleError);
+                        
+                        // إزالة من قائمة المراجع
+                        const index = allAudioRefs.current.indexOf(audio);
+                        if (index > -1) {
+                            allAudioRefs.current.splice(index, 1);
+                        }
+                        
+                        reject(e);
+                    };
+                    
+                    // إضافة المستمعين
+                    audio.addEventListener('ended', handleEnded);
+                    audio.addEventListener('error', handleError);
+                    
+                    // تشغيل الصوت
+                    audio.play().catch(e => {
+                        handleError(e);
+                    });
+                });
+            };
+            
+            // دالة جديدة لتشغيل بيت كامل
+            const speakVerse = async (verse, setVerseIsPlaying) => {
+                // تجنب التشغيل إذا كان هناك تشغيل للكل
+                if (isPlayingAll) return;
+                
+                // إيقاف أي صوت قيد التشغيل
+                stopPlayback();
+                
+                // تعيين حالة التشغيل
+                setVerseIsPlaying(true);
+                
+                try {
+                    // إذا كان هناك تأخير بين الكلمات، نشغل كلمة كلمة
+                    if (wordDelay > 0) {
+                        const words = verse.split(' ').filter(word => word.trim());
+                        
+                        for (let i = 0; i < words.length; i++) {
+                            // التحقق من أن المكون لا يزال مثبتاً
+                            if (!isMounted.current) break;
+                            
+                            // تشغيل الكلمة
+                            const isLastWord = i === words.length - 1;
+                            const delay = isLastWord ? 0 : wordDelay;
+                            await speakText(words[i], ttsRate, delay);
+                        }
+                    } else {
+                        // تشغيل البيت كاملاً كدفعة واحدة
+                        await speakText(verse, ttsRate);
+                    }
+                } catch (error) {
+                    console.error('Error in speakVerse:', error);
+                } finally {
+                    // إعادة تعيين حالة التشغيل إذا كان المكون لا يزال مثبتاً
+                    if (isMounted.current) {
+                        setVerseIsPlaying(false);
+                    }
+                }
+            };
+            
+            // دالة جديدة لتشغيل جميع الأبيات
+            const speakAllVerses = async () => {
+                // إذا كان التشغيل جاري، نقوم بإيقافه
+                if (isPlayingAll) {
+                    stopPlayback();
+                    return;
+                }
+                
+                // تعيين حالة تشغيل الكل
+                setIsPlayingAll(true);
+                
+                try {
+                    for (let i = 0; i < poem.verses.length; i++) {
+                        // التحقق من أن المكون لا يزال مثبتاً وأن حالة تشغيل الكل لا تزال نشطة
+                        if (!isMounted.current || !isPlayingAll) break;
+                        
+                        const verse = poem.verses[i];
+                        
+                        // تشغيل البيت الحالي حسب إعداد التأخير
+                        if (wordDelay > 0) {
+                            const words = verse.split(' ').filter(word => word.trim());
+                            
+                            for (let j = 0; j < words.length; j++) {
+                                // التحقق مرة أخرى من الحالة
+                                if (!isMounted.current || !isPlayingAll) break;
+                                
+                                // تشغيل الكلمة
+                                const isLastWord = j === words.length - 1;
+                                const delay = isLastWord ? 0 : wordDelay;
+                                await speakText(words[j], ttsRate, delay);
+                            }
+                        } else {
+                            // تشغيل البيت كاملاً
+                            await speakText(verse, ttsRate);
+                        }
+                        
+                        // تأخير بين الأبيات (إلا إذا كان هذا هو البيت الأخير)
+                        if (i < poem.verses.length - 1 && isMounted.current && isPlayingAll) {
+                            await new Promise(resolve => {
+                                timeoutRef.current = setTimeout(resolve, 1500);
+                            });
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error in speakAllVerses:', error);
+                } finally {
+                    // إعادة تعيين حالة تشغيل الكل إذا كان المكون لا يزال مثبتاً
+                    if (isMounted.current) {
+                        setIsPlayingAll(false);
+                    }
+                }
+            };
+
+            // إضافة useEffect لإيقاف التشغيل عند تغيير القصيدة
+            React.useEffect(() => {
+                stopPlayback();
+            }, [poem]);
 
             const toggleMemorized = (index) => {
                 updateMemorizedState(poem.title, index, !memorizedVerses[index]);
@@ -414,43 +712,170 @@
 
             return (
                 <div className="poem-container">
-                    <h2 className="text-xl sm:text-2xl font-bold text-center mb-4 sm:mb-6">{poem.title}</h2>
-                    <div className="tts-warning mb-4 text-center">
-                        <p>ملاحظة: الأداء الصوتي في المتصفح قد لا يراعي مخارج الحروف والتشكيل (مثل الكسرة أو التنوين) بشكل مثالي بسبب قيود تقنية. لنطق أدق، جرب أدوات خارجية مثل Google Text-to-Speech أو Amazon Polly.</p>
-                    </div>
+                    <h2 className="poem-title">{poem.title}</h2>
                     <div className="tts-controls">
-                        <label>
-                            سرعة الصوت:
-                            <input
-                                type="range"
-                                min="0.5"
-                                max="2.0"
-                                step="0.1"
-                                value={ttsRate}
-                                onChange={(e) => setTtsRate(parseFloat(e.target.value))}
-                                className="w-full"
-                            />
-                            <span>{ttsRate.toFixed(1)}</span>
-                        </label>
-                        <label>
-                            تأخير بين الكلمات (مللي ثانية):
-                            <input
-                                type="range"
-                                min="0"
-                                max="500"
-                                step="50"
-                                value={wordDelay}
-                                onChange={(e) => setWordDelay(parseInt(e.target.value))}
-                                className="w-full"
-                            />
-                            <span>{wordDelay} مللي ثانية</span>
-                        </label>
-                        <button
-                            onClick={speakAllVerses}
-                            className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 w-full sm:w-auto"
-                        >
-                            {isPlayingAll ? 'إيقاف الكل' : 'تشغيل صوت الكل'}
-                        </button>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <label className="block">
+                                <span className="text-sm font-medium mb-1 block">سرعة القراءة:</span>
+                                <input
+                                    type="range"
+                                    min="0.5"
+                                    max="2.0"
+                                    step="0.1"
+                                    value={ttsRate}
+                                    onChange={(e) => {
+                                        window.emergencyAudioStop();
+                                        setTtsRate(parseFloat(e.target.value));
+                                    }}
+                                    className="w-full"
+                                />
+                                <span className="text-sm">{ttsRate.toFixed(1)}x</span>
+                            </label>
+                            <label className="block">
+                                <span className="text-sm font-medium mb-1 block">تأخير بين الكلمات (مللي ثانية):</span>
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center">
+                                            <button 
+                                                className="px-3 py-1 bg-gray-100 hover:bg-gray-200 border rounded-r-none border-r-0"
+                                                onClick={() => {
+                                                    window.emergencyAudioStop();
+                                                    setWordDelay(Math.max(0, wordDelay - 10));
+                                                }}
+                                            >-10</button>
+                                            <button 
+                                                className="px-3 py-1 bg-gray-100 hover:bg-gray-200 border border-r-0"
+                                                onClick={() => {
+                                                    window.emergencyAudioStop();
+                                                    setWordDelay(Math.max(0, wordDelay - 1));
+                                                }}
+                                            >-1</button>
+                                            <input 
+                                                type="number" 
+                                                value={wordDelay}
+                                                onChange={(e) => {
+                                                    window.emergencyAudioStop();
+                                                    const val = parseInt(e.target.value);
+                                                    if (!isNaN(val) && val >= 0 && val <= 3000) {
+                                                        setWordDelay(val);
+                                                    }
+                                                }}
+                                                className="w-20 text-center border px-2 py-1"
+                                                min={0}
+                                                max={3000}
+                                                step={1}
+                                            />
+                                            <button 
+                                                className="px-3 py-1 bg-gray-100 hover:bg-gray-200 border border-l-0"
+                                                onClick={() => {
+                                                    window.emergencyAudioStop();
+                                                    setWordDelay(Math.min(3000, wordDelay + 1));
+                                                }}
+                                            >+1</button>
+                                            <button 
+                                                className="px-3 py-1 bg-gray-100 hover:bg-gray-200 border rounded-l-none border-l-0"
+                                                onClick={() => {
+                                                    window.emergencyAudioStop();
+                                                    setWordDelay(Math.min(3000, wordDelay + 10));
+                                                }}
+                                            >+10</button>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <span className="text-sm ml-2">0</span>
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="3000"
+                                            step="1"
+                                            value={wordDelay}
+                                            onChange={(e) => {
+                                                window.emergencyAudioStop();
+                                                setWordDelay(parseInt(e.target.value));
+                                            }}
+                                            className="w-full"
+                                        />
+                                        <span className="text-sm mr-2">3000</span>
+                                    </div>
+                                    <div className="flex justify-center text-sm font-bold">
+                                        التأخير الحالي: {wordDelay} مللي ثانية
+                                    </div>
+                                    <div className="flex justify-center gap-2 mt-2 flex-wrap">
+                                        <button 
+                                            className="px-2 py-1 bg-blue-100 hover:bg-blue-200 rounded text-xs"
+                                            onClick={() => {
+                                                window.emergencyAudioStop();
+                                                setWordDelay(50);
+                                            }}
+                                        >50 مللي ثانية</button>
+                                        <button 
+                                            className="px-2 py-1 bg-blue-100 hover:bg-blue-200 rounded text-xs"
+                                            onClick={() => {
+                                                window.emergencyAudioStop();
+                                                setWordDelay(100);
+                                            }}
+                                        >100 مللي ثانية</button>
+                                        <button 
+                                            className="px-2 py-1 bg-blue-100 hover:bg-blue-200 rounded text-xs"
+                                            onClick={() => {
+                                                window.emergencyAudioStop();
+                                                setWordDelay(150);
+                                            }}
+                                        >150 مللي ثانية</button>
+                                        <button 
+                                            className="px-2 py-1 bg-blue-100 hover:bg-blue-200 rounded text-xs"
+                                            onClick={() => {
+                                                window.emergencyAudioStop();
+                                                setWordDelay(200);
+                                            }}
+                                        >200 مللي ثانية</button>
+                                        <button 
+                                            className="px-2 py-1 bg-blue-100 hover:bg-blue-200 rounded text-xs"
+                                            onClick={() => {
+                                                window.emergencyAudioStop();
+                                                setWordDelay(250);
+                                            }}
+                                        >250 مللي ثانية</button>
+                                        <button 
+                                            className="px-2 py-1 bg-blue-100 hover:bg-blue-200 rounded text-xs"
+                                            onClick={() => {
+                                                window.emergencyAudioStop();
+                                                setWordDelay(300);
+                                            }}
+                                        >300 مللي ثانية</button>
+                                        <button 
+                                            className="px-2 py-1 bg-blue-100 hover:bg-blue-200 rounded text-xs"
+                                            onClick={() => {
+                                                window.emergencyAudioStop();
+                                                setWordDelay(400);
+                                            }}
+                                        >400 مللي ثانية</button>
+                                        <button 
+                                            className="px-2 py-1 bg-blue-100 hover:bg-blue-200 rounded text-xs"
+                                            onClick={() => {
+                                                window.emergencyAudioStop();
+                                                setWordDelay(500);
+                                            }}
+                                        >500 مللي ثانية</button>
+                                        <button 
+                                            className="px-2 py-1 bg-blue-100 hover:bg-blue-200 rounded text-xs"
+                                            onClick={() => {
+                                                window.emergencyAudioStop();
+                                                setWordDelay(1000);
+                                            }}
+                                        >1 ثانية</button>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        <div className="mt-4 flex justify-center">
+                            <button
+                                onClick={speakAllVerses}
+                                className={`px-6 py-2 ${isPlayingAll ? 'bg-red-500 hover:bg-red-600' : 'bg-purple-500 hover:bg-purple-600'} text-white rounded-lg transition-colors duration-200 text-sm sm:text-base`}
+                            >
+                                {isPlayingAll ? 'إيقاف الكل' : 'تشغيل صوت الكل'}
+                            </button>
+                        </div>
                     </div>
                     <div className="mb-4 sm:mb-6">
                         <p className="text-center mb-2 text-sm sm:text-base">تقدم الحفظ: {memorizedCount} / {poem.verses.length}</p>
@@ -470,6 +895,8 @@
                             toggleMemorized={toggleMemorized}
                             speakVerse={speakVerse}
                             isPlayingAll={isPlayingAll}
+                            audioRef={allAudioRefs.current[index]}
+                            settings={settings}
                         />
                     ))}
                 </div>
@@ -479,6 +906,15 @@
         function App() {
             const [selectedPoem, setSelectedPoem] = React.useState(poems[0]);
             const [category, setCategory] = React.useState("حفظ");
+            const [showSettings, setShowSettings] = React.useState(false);
+            const [settings, setSettings] = React.useState(() => {
+                const savedSettings = localStorage.getItem('poemSettings');
+                return savedSettings ? JSON.parse(savedSettings) : {
+                    fontSize: 1.25, // rem
+                    verseBackground: '#ffffff',
+                    pageBackground: '#f4f4f9'
+                };
+            });
             const [memorizedStates, setMemorizedStates] = React.useState(
                 poems.reduce((acc, poem) => {
                     acc[poem.title] = new Array(poem.verses.length).fill(false);
@@ -486,7 +922,20 @@
                 }, {})
             );
 
+            // حفظ الإعدادات في التخزين المحلي
+            React.useEffect(() => {
+                localStorage.setItem('poemSettings', JSON.stringify(settings));
+                document.body.style.backgroundColor = settings.pageBackground;
+            }, [settings]);
+
             const filteredPoems = poems.filter(poem => poem.category === category);
+
+            // تحديث القصيدة المختارة عند تغيير القسم
+            React.useEffect(() => {
+                if (filteredPoems.length > 0) {
+                    setSelectedPoem(filteredPoems[0]);
+                }
+            }, [category]);
 
             const updateMemorizedState = (poemTitle, index, state) => {
                 setMemorizedStates(prev => {
@@ -496,6 +945,13 @@
                 });
             };
 
+            const updateSetting = (key, value) => {
+                setSettings(prev => ({
+                    ...prev,
+                    [key]: value
+                }));
+            };
+
             return (
                 <div className="min-h-screen p-4 sm:p-6 max-w-full">
                     <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8">موقع حفظ القصائد</h1>
@@ -503,17 +959,114 @@
                     <div className="flex flex-col sm:flex-row sm:justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
                         <button
                             onClick={() => setCategory("حفظ")}
-                            className={`px-4 py-2 rounded w-full sm:w-auto ${category === "حفظ" ? "bg-blue-600 text-white" : "bg-gray-200"} text-sm sm:text-base`}
+                            className={`px-4 py-2 rounded w-full sm:w-auto ${category === "حفظ" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
                         >
                             قصائد الحفظ
                         </button>
                         <button
                             onClick={() => setCategory("شرح")}
-                            className={`px-4 py-2 rounded w-full sm:w-auto ${category === "شرح" ? "bg-blue-600 text-white" : "bg-gray-200"} text-sm sm:text-base`}
+                            className={`px-4 py-2 rounded w-full sm:w-auto ${category === "شرح" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
                         >
                             قصائد الشرح
                         </button>
+                        <button
+                            onClick={() => setCategory("رسائل")}
+                            className={`px-4 py-2 rounded w-full sm:w-auto ${category === "رسائل" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
+                        >
+                            الرسائل
+                        </button>
+                        <button
+                            onClick={() => setShowSettings(!showSettings)}
+                            className={`px-4 py-2 rounded w-full sm:w-auto ${showSettings ? "bg-blue-600 text-white" : "bg-gray-200"}`}
+                        >
+                            الإعدادات
+                        </button>
                     </div>
+
+                    {showSettings && (
+                        <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+                            <h2 className="text-xl font-bold mb-4 text-center">إعدادات التخصيص</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">حجم النص</label>
+                                    <div className="flex items-center">
+                                        <span className="ml-2 text-sm">صغير</span>
+                                        <input
+                                            type="range"
+                                            min="0.8"
+                                            max="2"
+                                            step="0.1"
+                                            value={settings.fontSize}
+                                            onChange={(e) => updateSetting('fontSize', parseFloat(e.target.value))}
+                                            className="w-full"
+                                        />
+                                        <span className="mr-2 text-sm">كبير</span>
+                                    </div>
+                                    <div className="text-center mt-1 text-sm">
+                                        {settings.fontSize.toFixed(1)}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">لون خلفية البيت</label>
+                                    <input
+                                        type="color"
+                                        value={settings.verseBackground}
+                                        onChange={(e) => updateSetting('verseBackground', e.target.value)}
+                                        className="w-full h-10 cursor-pointer"
+                                    />
+                                    <div className="flex mt-2">
+                                        <button
+                                            onClick={() => updateSetting('verseBackground', '#ffffff')}
+                                            className="bg-gray-200 text-xs px-2 py-1 ml-1 rounded"
+                                        >
+                                            افتراضي
+                                        </button>
+                                        <button
+                                            onClick={() => updateSetting('verseBackground', '#f0f7ff')}
+                                            className="bg-blue-100 text-xs px-2 py-1 ml-1 rounded"
+                                        >
+                                            أزرق فاتح
+                                        </button>
+                                        <button
+                                            onClick={() => updateSetting('verseBackground', '#fff8e1')}
+                                            className="bg-yellow-100 text-xs px-2 py-1 rounded"
+                                        >
+                                            أصفر فاتح
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">لون خلفية الصفحة</label>
+                                    <input
+                                        type="color"
+                                        value={settings.pageBackground}
+                                        onChange={(e) => updateSetting('pageBackground', e.target.value)}
+                                        className="w-full h-10 cursor-pointer"
+                                    />
+                                    <div className="flex mt-2">
+                                        <button
+                                            onClick={() => updateSetting('pageBackground', '#f4f4f9')}
+                                            className="bg-gray-200 text-xs px-2 py-1 ml-1 rounded"
+                                        >
+                                            افتراضي
+                                        </button>
+                                        <button
+                                            onClick={() => updateSetting('pageBackground', '#f7f7f7')}
+                                            className="bg-white text-xs border px-2 py-1 ml-1 rounded"
+                                        >
+                                            أبيض
+                                        </button>
+                                        <button
+                                            onClick={() => updateSetting('pageBackground', '#f0f7ff')}
+                                            className="bg-blue-100 text-xs px-2 py-1 rounded"
+                                        >
+                                            أزرق فاتح
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="dropdown flex justify-center mb-4 sm:mb-6">
                         <select
@@ -536,10 +1089,44 @@
                         poem={selectedPoem} 
                         memorizedVerses={memorizedStates[selectedPoem.title]} 
                         updateMemorizedState={updateMemorizedState}
+                        settings={settings}
                     />
                 </div>
             );
         }
+
+        // بناء مكون للإدخال الرقمي الدقيق
+        const NumericInput = ({ value, onChange, step, min, max, label }) => {
+            return (
+                <div className="flex items-center">
+                    <span className="text-sm">{label}:</span>
+                    <div className="flex items-center mx-2 border rounded">
+                        <button 
+                            className="px-2 py-1 bg-gray-100 hover:bg-gray-200"
+                            onClick={() => onChange(Math.max(min, value - step))}
+                        >-</button>
+                        <input 
+                            type="number" 
+                            value={value}
+                            onChange={(e) => {
+                                const val = parseFloat(e.target.value);
+                                if (!isNaN(val) && val >= min && val <= max) {
+                                    onChange(val);
+                                }
+                            }}
+                            className="w-16 text-center"
+                            min={min}
+                            max={max}
+                            step={step}
+                        />
+                        <button 
+                            className="px-2 py-1 bg-gray-100 hover:bg-gray-200"
+                            onClick={() => onChange(Math.min(max, value + step))}
+                        >+</button>
+                    </div>
+                </div>
+            );
+        };
 
         ReactDOM.render(<App />, document.getElementById('root'));
     </script>
