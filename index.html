@@ -683,103 +683,137 @@
             // طريقة جديدة تماماً لتشغيل الكلمات مع دعم أفضل للتأخير
             const speakText = async (text, rate, delayAfter = 0) => {
                 return new Promise((resolve, reject) => {
-                    // تنظيف النص وتحسين النطق
-                    let processedText = text;
-                    if (text.includes("عمرو")) {
-                        processedText = text.replace(/عمرو/g, "عَمْرُو");
+                    // تنظيف النص من علامات التشكيل والرموز الخاصة
+                    let processedText = text
+                        .replace(/\*/g, '') // إزالة علامات النجمة
+                        .replace(/\s+/g, ' ') // توحيد المسافات
+                        .trim();
+
+                    // تقسيم النص الطويل إلى أجزاء أصغر
+                    const maxLength = 150;
+                    const textChunks = [];
+                    
+                    // إذا كان النص شعراً (يحتوي على علامة *)، نقسمه عند الشطرين
+                    if (text.includes('*')) {
+                        const parts = text.split('*');
+                        if (parts.length === 2) {
+                            textChunks.push(parts[0].trim());
+                            textChunks.push(parts[1].trim());
+                        } else {
+                            textChunks.push(processedText);
+                        }
+                    } else {
+                        let remainingText = processedText;
+                        while (remainingText.length > 0) {
+                            let chunk = remainingText.substring(0, maxLength);
+                            const lastPunctuation = Math.max(
+                                chunk.lastIndexOf('،'),
+                                chunk.lastIndexOf('.')
+                            );
+                            
+                            if (lastPunctuation > 0 && remainingText.length > maxLength) {
+                                chunk = remainingText.substring(0, lastPunctuation + 1);
+                            }
+                            
+                            textChunks.push(chunk);
+                            remainingText = remainingText.substring(chunk.length);
+                        }
                     }
-                    
-                    console.log(`Playing: "${processedText}" with rate ${rate}, delay after: ${delayAfter}ms`);
-                    
-                    // إنشاء عنصر الصوت
-                    const audio = new Audio();
-                    
-                    // تعيين معالج الأحداث قبل تعيين المصدر
-                    const handleEnded = async () => {
-                        audio.removeEventListener('ended', handleEnded);
-                        
-                        // إزالة من قائمة المراجع
-                        const index = allAudioRefs.current.indexOf(audio);
-                        if (index > -1) {
-                            allAudioRefs.current.splice(index, 1);
+
+                    const playChunks = async (index = 0) => {
+                        if (index >= textChunks.length) {
+                            resolve();
+                            return;
                         }
+
+                        const audio = new Audio();
                         
-                        // تنفيذ التأخير إذا كان مطلوباً
-                        if (delayAfter > 0 && isMounted.current) {
-                            await new Promise(innerResolve => {
-                                timeoutRef.current = setTimeout(innerResolve, delayAfter);
-                            });
+                        const handleEnded = async () => {
+                            audio.removeEventListener('ended', handleEnded);
+                            const nextIndex = index + 1;
+                            
+                            // إزالة الصوت الحالي من القائمة
+                            const audioIndex = allAudioRefs.current.indexOf(audio);
+                            if (audioIndex > -1) {
+                                allAudioRefs.current.splice(audioIndex, 1);
+                            }
+
+                            if (nextIndex < textChunks.length) {
+                                await new Promise(r => setTimeout(r, 800)); // زيادة التأخير بين الأجزاء
+                                await playChunks(nextIndex);
+                            } else if (delayAfter > 0 && isMounted.current) {
+                                await new Promise(r => setTimeout(r, delayAfter));
+                                resolve();
+                            } else {
+                                resolve();
+                            }
+                        };
+
+                        const handleError = (e) => {
+                            console.error("Audio playback error:", e);
+                            const audioIndex = allAudioRefs.current.indexOf(audio);
+                            if (audioIndex > -1) {
+                                allAudioRefs.current.splice(audioIndex, 1);
+                            }
+                            reject(e);
+                        };
+
+                        audio.addEventListener('ended', handleEnded);
+                        audio.addEventListener('error', handleError);
+
+                        allAudioRefs.current.push(audio);
+                        setCurrentAudio(audio);
+
+                        const chunk = textChunks[index].trim();
+                        if (chunk) {
+                            audio.src = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ar&client=tw-ob&q=${encodeURIComponent(chunk)}`;
+                            audio.playbackRate = rate;
+
+                            try {
+                                await audio.play();
+                            } catch (e) {
+                                handleError(e);
+                            }
+                        } else {
+                            // تخطي الأجزاء الفارغة
+                            await playChunks(index + 1);
                         }
-                        
-                        // إكمال الوعد
-                        resolve();
                     };
-                    
-                    const handleError = (e) => {
-                        console.error("Audio playback error:", e);
-                        audio.removeEventListener('error', handleError);
-                        
-                        // إزالة من قائمة المراجع
-                        const index = allAudioRefs.current.indexOf(audio);
-                        if (index > -1) {
-                            allAudioRefs.current.splice(index, 1);
-                        }
-                        
-                        reject(e);
-                    };
-                    
-                    // إضافة المستمعين
-                    audio.addEventListener('ended', handleEnded);
-                    audio.addEventListener('error', handleError);
-                    
-                    // تخزين مرجع الصوت للتمكن من إيقافه لاحقاً
-                    allAudioRefs.current.push(audio);
-                    setCurrentAudio(audio);
-                    
-                    // تعيين المصدر وتشغيل الصوت
-                    audio.src = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ar&client=tw-ob&q=${encodeURIComponent(processedText)}`;
-                    audio.playbackRate = rate;
-                    
-                    // تشغيل الصوت
-                    audio.play().catch(e => {
-                        handleError(e);
-                    });
+
+                    playChunks();
                 });
             };
             
             // دالة جديدة لتشغيل بيت كامل
             const speakVerse = async (verse, setVerseIsPlaying) => {
-                // تجنب التشغيل إذا كان هناك تشغيل للكل
                 if (isPlayingAll) return;
                 
-                // إيقاف أي صوت قيد التشغيل
                 stopPlayback();
-                
-                // تعيين حالة التشغيل
                 setVerseIsPlaying(true);
                 
                 try {
-                    // إذا كان هناك تأخير بين الكلمات، نشغل كلمة كلمة
                     if (wordDelay > 0) {
-                        const words = verse.split(' ').filter(word => word.trim());
-                        
-                        for (let i = 0; i < words.length; i++) {
-                            // التحقق من أن المكون لا يزال مثبتاً
+                        // تقسيم البيت إلى شطرين
+                        const parts = verse.split('*');
+                        for (const part of parts) {
                             if (!isMounted.current || !setVerseIsPlaying) break;
                             
-                            // تشغيل الكلمة
-                            const isLastWord = i === words.length - 1;
-                            const delay = isLastWord ? 0 : wordDelay;
-                            await speakText(words[i], ttsRate, delay);
+                            const words = part.trim().split(' ').filter(word => word.trim());
+                            for (const word of words) {
+                                if (!isMounted.current || !setVerseIsPlaying) break;
+                                await speakText(word, ttsRate, wordDelay);
+                            }
+                            // تأخير إضافي بين الشطرين
+                            if (parts.indexOf(part) === 0) {
+                                await new Promise(r => setTimeout(r, 1000));
+                            }
                         }
                     } else {
-                        // تشغيل البيت كاملاً كدفعة واحدة
                         await speakText(verse, ttsRate);
                     }
                 } catch (error) {
                     console.error('Error in speakVerse:', error);
                 } finally {
-                    // إعادة تعيين حالة التشغيل إذا كان المكون لا يزال مثبتاً
                     if (isMounted.current && setVerseIsPlaying) {
                         setVerseIsPlaying(false);
                     }
@@ -788,51 +822,29 @@
             
             // دالة جديدة لتشغيل جميع الأبيات
             const speakAllVerses = async () => {
-                // إذا كان التشغيل جاري، نقوم بإيقافه
                 if (isPlayingAll) {
                     stopPlayback();
+                    setIsPlayingAll(false);
                     return;
                 }
                 
-                // تعيين حالة تشغيل الكل
                 setIsPlayingAll(true);
                 
                 try {
                     for (let i = 0; i < poem.verses.length; i++) {
-                        // التحقق من أن المكون لا يزال مثبتاً وأن حالة تشغيل الكل لا تزال نشطة
                         if (!isMounted.current || !isPlayingAll) break;
                         
                         const verse = poem.verses[i];
+                        await speakVerse(verse);
                         
-                        // تشغيل البيت الحالي حسب إعداد التأخير
-                        if (wordDelay > 0) {
-                            const words = verse.split(' ').filter(word => word.trim());
-                            
-                            for (let j = 0; j < words.length; j++) {
-                                // التحقق مرة أخرى من الحالة
-                                if (!isMounted.current || !isPlayingAll) break;
-                                
-                                // تشغيل الكلمة
-                                const isLastWord = j === words.length - 1;
-                                const delay = isLastWord ? 0 : wordDelay;
-                                await speakText(words[j], ttsRate, delay);
-                            }
-                        } else {
-                            // تشغيل البيت كاملاً
-                            await speakText(verse, ttsRate);
-                        }
-                        
-                        // تأخير بين الأبيات (إلا إذا كان هذا هو البيت الأخير)
-                        if (i < poem.verses.length - 1 && isMounted.current && isPlayingAll) {
-                            await new Promise(resolve => {
-                                timeoutRef.current = setTimeout(resolve, 1500);
-                            });
+                        // تأخير بين الأبيات
+                        if (i < poem.verses.length - 1) {
+                            await new Promise(r => setTimeout(r, 1500));
                         }
                     }
                 } catch (error) {
                     console.error('Error in speakAllVerses:', error);
                 } finally {
-                    // إعادة تعيين حالة تشغيل الكل إذا كان المكون لا يزال مثبتاً
                     if (isMounted.current) {
                         setIsPlayingAll(false);
                     }
@@ -856,6 +868,14 @@
                     <h2 className="poem-title">{poem.title}</h2>
                     <div className="tts-controls">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="col-span-2 flex justify-center mb-4">
+                                <button
+                                    onClick={speakAllVerses}
+                                    className={`px-6 py-2 ${isPlayingAll ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'} text-white rounded-lg transition-colors duration-200 text-lg font-bold`}
+                                >
+                                    {isPlayingAll ? 'إيقاف القراءة' : 'قراءة القصيدة كاملة'}
+                                </button>
+                            </div>
                             <label className="block">
                                 <span className="text-sm font-medium mb-1 block">سرعة القراءة:</span>
                                 <input
